@@ -1,0 +1,29 @@
+{
+  "name": "aa_adapter",
+  "version": "0.0.1",
+  "description": "The idea of the adapter is to act as a glue between Indocord and AA Backend. It will be a small application but will need to have both frontend and backend",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ayushmanmanishankar/AA_Adapter.git"
+  },
+  "author": "ayushmanmanishankar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ayushmanmanishankar/AA_Adapter/issues"
+  },
+  "homepage": "https://github.com/ayushmanmanishankar/AA_Adapter#readme",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
