@@ -46,7 +46,7 @@ router.get('/linkedaccount', async function (req, res) {
                         }
                         return response.json();
                     })
-                    .then((result) => {
+                    .then(async(result) => {
                         if(!result){
                             return;
                         }
@@ -61,6 +61,8 @@ router.get('/linkedaccount', async function (req, res) {
                                 last4digits: maskedAccNumber.slice(maskedAccNumber.length-4)
                             })
                         });
+                        session.step = 3;
+                        await sessionCollection.updateOne({ sessionId }, { $set: session });
                         res.status(200).json(accounts);
                     })
                     .catch((error) => {
@@ -120,10 +122,12 @@ router.get('/Consent/handle', async function (req, res) {
                         }
                         return response.json();
                     })
-                    .then((result) => {
+                    .then(async(result) => {
                         if(!result){
                             return;
                         }
+                        session.step = 4;
+                        await sessionCollection.updateOne({ sessionId }, { $set: session });
                         res.status(200).json(result);
                     })
                     .catch((error) => {
@@ -208,7 +212,8 @@ router.post('/Consents/Approval/Verification', async function (req, res) {
                         if(!result){
                             return;
                         }
-                        await sessionCollection.deleteOne({sessionId: session.sessionId});
+                        session.step = 5;
+                        await sessionCollection.updateOne({ sessionId }, { $set: session });
                         res.status(200).json(result);
                     })
                     .catch((error) => {
@@ -271,7 +276,10 @@ router.post('/init-otp', async (req, res) => {
                         return;
                     }
                 })
-                .then((result) => {
+                .then(async(result) => {
+                    //step to 1
+                    session.step = 1;
+                    await sessionCollection.updateOne({ sessionId }, { $set: session });
                     res.status(200).json({ status: 'OK', message: "OTP sent successfully", otpUniqueID: result.otpUniqueID });
                     return;
 
@@ -345,8 +353,9 @@ router.post('/verify-otp', async (req, res) => {
 
                     }
                     let { firstName, lastName, vuaId, phoneNumber, access_token } = result;
-
                     session = await updateSessionAccessToken(sessionId, access_token);
+                    session.step = 2;
+                    await sessionCollection.updateOne({ sessionId }, { $set: session });
                     res.status(200).json({
                         firstName,
                         lastName,

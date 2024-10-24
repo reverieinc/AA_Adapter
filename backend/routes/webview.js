@@ -27,7 +27,8 @@ const createSession = async(req,res,data,baseUrl) => {
         userid,
         ivrSessionStart,
         ivrSessionEnd,
-        baseUrl
+        baseUrl,
+        step:0
     }
 
     let existingSession = await sessionCollection.findOne({sessionId})

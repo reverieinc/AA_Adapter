@@ -9,9 +9,11 @@ app.use(cors());
 
 let userRouter = require('./routes/user');
 let webViewRouter = require('./routes/webview');
+let progressRouter = require('./routes/progress');
 
 app.use('/User', userRouter);
 app.use('/webview', webViewRouter);
+app.use('/progress', progressRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
