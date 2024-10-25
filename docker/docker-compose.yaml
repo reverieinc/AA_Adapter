@@ -10,7 +10,7 @@ services:
       - POSTGRES_DB=${MAIN_DB_NAME}
     restart: always
     volumes:
-      - ~/../ayushman.manishankar/.postgresql/data:/var/lib/postgresql/data
+      - ~/.postgresql/data:/var/lib/postgresql/data
     ports:
       - "${MAIN_DB_PORT}:${MAIN_DB_PORT}"
     healthcheck:
