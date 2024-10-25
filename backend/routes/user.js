@@ -61,7 +61,7 @@ router.get('/linkedaccount', async function (req, res) {
                                 last4digits: maskedAccNumber.slice(maskedAccNumber.length-4)
                             })
                         });
-                        session.step = 3;
+                        session.step = 4;
                         await sessionCollection.updateOne({ sessionId }, { $set: session });
                         res.status(200).json(accounts);
                     })
@@ -126,7 +126,7 @@ router.get('/Consent/handle', async function (req, res) {
                         if(!result){
                             return;
                         }
-                        session.step = 4;
+                        session.step = 5;
                         await sessionCollection.updateOne({ sessionId }, { $set: session });
                         res.status(200).json(result);
                     })
@@ -212,7 +212,7 @@ router.post('/Consents/Approval/Verification', async function (req, res) {
                         if(!result){
                             return;
                         }
-                        session.step = 5;
+                        session.step = 6;
                         await sessionCollection.updateOne({ sessionId }, { $set: session });
                         res.status(200).json(result);
                     })

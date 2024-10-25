@@ -1,162 +1,137 @@
 "use client"
 
-import { Button, Input, message } from "antd";
+import { Button, Checkbox, Input, message, Typography } from "antd";
 import styles from "./page.module.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
-const { TextArea } = Input;
-import { CheckCircleTwoTone, LoadingOutlined } from '@ant-design/icons';
 
 export default function Home() {
-  const [value, setValue] = useState('');
-  const [clientHandle,setClientHandle] = useState('');
-  const [buttonDisabled,setButtonDisabled] = useState(false);
-  const [sessionId,setSessionId] = useState('');
-  const [phone,setPhone] = useState('');
-  const [step,setStep] = useState(0);
+  const [mobile, setMobile] = useState('');
+  const [fiList, setFiList] = useState([]);
+  const [fiuEntity,setFiuEntity] = useState('');
 
-  const progressSteps = [
-    'User Login',
-    'OTP Verification',
-    'Fetching Linked Accounts',
-    'Consent Review',
-    'Consent Approval',
+  let fiTypeList = [
+    "DEPOSIT",
+    "RECURRING_DEPOSIT",
+    "SIP",
+    "CP",
+    "GOVT_SECURITIES",
+    "EQUITIES",
+    "BONDS",
+    "DEBENTURES",
+    "MUTUAL_FUNDS",
+    "ETF",
+    "IDR",
+    "CIS",
+    "AIF",
+    "INSURANCE_POLICIES",
+    "NPS",
+    "INVIT",
+    "REIT",
+    "OTHER",
+    "GENERAL_INSURANCE",
+    "GSTR1_3B",
+    "TERM_DEPOSIT",
+    "TERM_DEPOSIT"
+  ];
 
-  ]
-  
-  const handleSubmit = async() =>{
-    let token = value.split('?')[1];
-    let url = process.env.NEXT_PUBLIC_AA_ADAPTER_URL;
-    //replace all %3D to =
-    token = token.replace(/%3D/g, "=");
-    console.log(token,url);
+  const handleAddToFIList = (e, fiType) => {
+    if (e) {
+      if (!fiList.includes(fiType)) {
+        setFiList((prev) => {
+          return [...prev, fiType];
+        })
+
+      }
+
+    }
+    else {
+      if (fiList.includes(fiType)) {
+        setFiList((prev) => {
+          return prev.filter((item) => item !== fiType);
+        })
+
+      }
+
+    }
+
+  }
+
+  const handleGetConsent = async () => {
+    if (mobile.length !== 10) {
+      message.warning("Enter valid mobie number");
+      return;
+
+    }
+    if (fiList.length === 0) {
+      message.warning("Select at least one FI type");
+      return;
+
+    }
+
+    if(fiuEntity.length === 0){
+      message.warning("Enter FIU Entity");
+      return;
+
+    }
+
+    const axios = require('axios');
+    let data = JSON.stringify({
+      "redirect_params": {
+        "callback_url": "https://bootstack.xyz"
+      },
+      fiList,
+      mobile
+
+    });
 
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `${url}/webview?${token}`,
-      headers: { 
-        'client_handle': clientHandle
-      }
+      url: `${process.env.NEXT_PUBLIC_AA_ADAPTER_URL}/auth`,
+      headers: {
+        'fiu_entity_id': fiuEntity,
+        'aa_entity_id': 'saafe-sandbox',
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic YWlfMjhYUGs5Q0x4QVNtZTJWc2s2cHluNlJ0dHBkeE4yRGU6YXNfaGZkMlJKc0R1ejNRaU1xeWlMODVKZ0xVeDhQSzZIRGY='
+      },
+      data
     };
 
-
-    let res = await axios.request(config)
-    if(res.status === 200){
-      console.log("Session started")
-        let data = res.data;
-        let {sessionId,phone,fiuName} = data;
-        setButtonDisabled(true);
-        setSessionId(sessionId);
-        setPhone(phone);
-
-    }
-    else{
-      message.info("Expired Request")
-    }
+    axios.request(config)
+      .then((response) => {
+        console.log((response.data));
+      })
+      .catch((error) => {
+        console.log(error.message);
+      });
 
   }
-
-  const getProgress = async() => {
-    console.log("fetching request");
-    let url = process.env.NEXT_PUBLIC_AA_ADAPTER_URL;
-    let config = {
-      method: 'get',
-      url: `${url}/progress?sessionId=${sessionId}`,
-    };
-
-    let res = await axios.request(config)
-    if(res.status === 200){
-      setStep(res.data.step);
-
-    }
-    else{
-      message.error("Failed to fetch progress")
-    }
-  }
-
-  useEffect(()=>{
-    if(sessionId.length === 0){
-      return;
-    }
-    let interval = setInterval(()=>{
-      getProgress();
-
-      return ()=>{
-        clearInterval(interval);
-      }
-
-    },2000)
-    
-  },[sessionId]);
 
   return (
     <div className={styles.page}>
-      {
-        sessionId.length>0 &&
-          <div>
-            <h2>Session ID : {sessionId}</h2>
-            <p>Phone: {phone}</p>
+      <Input value={mobile} onChange={(e) => setMobile(e.target.value)} placeholder="Enter Registered Mobile Number" />
+      <Input value={fiuEntity} onChange={(e)=>setFiuEntity(e.target.value)} placeholder="Enter FIU Entity ID" />
+      <Typography.Title style={{ color: "white" }} color="white">Consents</Typography.Title>
+      <div className={styles.gridContainer}>
+        {
+          fiTypeList.map((fiType, index) => (
+            <Checkbox
+              style={{ color: "white" }}
+              key={index}
+              value={fiType}
+              onChange={(e) => {
+                handleAddToFIList(e, fiType)
+              }}
+            >
+              {fiType}
 
-          </div>
-      }
-      <TextArea
-        autoCorrect={false}
-        spellCheck={false}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="Enter your redirection URL"
-        autoSize={{
-          minRows: 5,
-          maxRows: 5,
-        }}
-        style={{
-          backgroundColor:"GRAY",
-          color:'white'
-        }}
+            </Checkbox>
 
-      />
-      <Input
-        value={clientHandle}
-        placeholder="Enter client handle"
-        onChange={(e)=>setClientHandle(e.target.value)}
-        style={{
-          backgroundColor:"GRAY",
-          color:'white'
-        }}
-      />
-      <Button disabled={buttonDisabled} type="primary" onClick={handleSubmit}>Trigger IVR Call</Button>
-
-      {
-        sessionId.length > 0 &&
-        <div style={{display:"flex",flexDirection:"column",justifyContent:"flex-start",alignItems:"flex-start",gap:"10px"}}>
-          {
-            progressSteps.map((item, index) => {
-              console.log(index)
-              return (
-                <div key={index} style={{display:"flex",flexDirection:"row",justifyContent:"center",alignItems:"center",gap:"10px"}}>
-                  <span>{item}</span>
-                  {
-                    step>=index?step===index?<LoadingOutlined />:<CheckCircleTwoTone twoToneColor="#52c41a" />:<></>
-                  }
-                  
-                </div>
-              );
-            })
-          }
-        </div>
-      }
-      
-          {
-            step===5 &&
-            <div style={{display:"flex",flexDirection:"row",justifyContent:"flex-start",alignItems:"flex-start",gap:"10px"}}>
-                  <span>Verification Complete</span>
-                  {
-                    <CheckCircleTwoTone twoToneColor="#52c41a" />
-                  }
-                  
-              </div>
-          }
-        </div>
+          ))
+        }
+      </div>
+      <Button type="primary" onClick={handleGetConsent}>Send Consent</Button>
+    </div>
   );
 }
