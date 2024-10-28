@@ -2,79 +2,94 @@ const { default: axios } = require('axios');
 let express = require('express')
 const router = express.Router();
 
-router.post('/',(req,res)=>{
-    try{
+const configureApp = async () => {
+
+}
+
+const configureFIU = async () => {
+
+}
+
+const configureAA = async () => {
+
+}
+
+router.post('/', async (req, res) => {
+    try {
         let headers = req.headers;
-        let url = 'http://localhost:9000/v2/consents/request';
+        let fiuEntityId = headers['fiu_entity_id'];
+        let aaEntityId = headers['aa_entity_id'];
         let body = req.body;
-        let {fiList,mobile} = body;
 
         let data = JSON.stringify({
             "redirect_params": {
-              "callback_url": "https://bootstack.xyz"
+                "callback_url": "https://bootstack.xyz"
             },
             "consents": [
-              {
-                "consent_start": "2024-10-25T04:22:24.975Z",
-                "consent_expiry": "2026-12-31T00:00:00.000Z",
-                "consent_mode": "STORE",
-                "fetch_type": "PERIODIC",
-                "consent_types": fiList,
-                "fi_types": [
-                  "DEPOSIT"
-                ],
-                "customer": {
-                  "identifiers": [
-                    {
-                      "type": "MOBILE",
-                      "value": mobile
+                {
+                    "consent_start": "2024-10-28T11:26:11.856Z",
+                    "consent_expiry": "2026-12-31T00:00:00.000Z",
+                    "consent_mode": "STORE",
+                    "fetch_type": "PERIODIC",
+                    "consent_types": [
+                        "PROFILE",
+                        "SUMMARY",
+                        "TRANSACTIONS"
+                    ],
+                    "fi_types": body.fiList,
+                    "customer": {
+                        "identifiers": [
+                            {
+                                "type": "MOBILE",
+                                "value": body.mobile
+                            }
+                        ]
+                    },
+                    "purpose": {
+                        "code": "101",
+                        "text": "Wealth management service"
+                    },
+                    "fi_data_range": {
+                        "from": "2023-01-01T00:00:00.000Z",
+                        "to": "2025-12-31T00:00:00.000Z"
+                    },
+                    "data_life": {
+                        "unit": "MONTH",
+                        "value": 10
+                    },
+                    "frequency": {
+                        "unit": "MONTH",
+                        "value": 31
                     }
-                  ]
-                },
-                "purpose": {
-                  "code": "101",
-                  "text": "Wealth management service"
-                },
-                "fi_data_range": {
-                  "from": "2023-01-01T00:00:00.000Z",
-                  "to": "2025-12-31T00:00:00.000Z"
-                },
-                "data_life": {
-                  "unit": "MONTH",
-                  "value": 10
-                },
-                "frequency": {
-                  "unit": "MONTH",
-                  "value": 31
                 }
-              }
             ]
-          });
+        });
 
         let config = {
             method: 'post',
             maxBodyLength: Infinity,
-            url,
-            headers,
-            data,
+            url: 'http://localhost:9000/v2/consents/request',
+            headers: {
+                'fiu_entity_id': fiuEntityId,
+                'aa_entity_id': aaEntityId,
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic YWlfSFR2RGJvTFJEVlEyRmJnck1WbTRDQWVUZ2pheDV2dE46YXNfa242NW53TWlqODhOY2Zydm9vWkhkVmo2UW9icXR0Qnc='
+            },
+            data: data
+        };
 
-          };
-      
-          axios.request(config)
+        axios.request(config)
             .then((response) => {
-                console.log(response);
+                // console.log((response.data));
                 res.status(200).json(response.data);
                 return;
             })
             .catch((error) => {
-              console.log(error.message);
-              res.status(500).json({ status: 'ERROR', message: error.message });
-              return;
+                console.log(error);
+                res.status(500).json({ status: 'ERROR', message: 'Internal Server Error' });
             });
 
-        // logic to save the user data in the database
-
-    } catch(error){
+    } catch (error) {
         console.error(error);
         res.status(500).json({ status: 'ERROR', message: 'Internal server error' });
         return;

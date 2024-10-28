@@ -4,11 +4,13 @@ import { Button, Checkbox, Input, message, Typography } from "antd";
 import styles from "./page.module.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [mobile, setMobile] = useState('');
   const [fiList, setFiList] = useState([]);
   const [fiuEntity,setFiuEntity] = useState('');
+  let router = useRouter();
 
   let fiTypeList = [
     "DEPOSIT",
@@ -75,7 +77,6 @@ export default function Home() {
 
     }
 
-    const axios = require('axios');
     let data = JSON.stringify({
       "redirect_params": {
         "callback_url": "https://bootstack.xyz"
@@ -100,7 +101,12 @@ export default function Home() {
 
     axios.request(config)
       .then((response) => {
-        console.log((response.data));
+        let res = ((response.data));
+        let redirectUrl = res.redirect_url;
+        let token = redirectUrl.split('?')[1];
+        let proxyRedirect = `/webview?client_handle=saafe_aa&${token}`;
+        router.push(proxyRedirect);
+        
       })
       .catch((error) => {
         console.log(error.message);

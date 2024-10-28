@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 const { TextArea } = Input;
 import { CheckCircleTwoTone, LoadingOutlined } from '@ant-design/icons';
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 export default function Home() {
     const [value, setValue] = useState('');
@@ -16,7 +16,8 @@ export default function Home() {
     const [phone, setPhone] = useState('');
     const [step, setStep] = useState(0);
     const [otpId, setOtpId] = useState('');
-    const [ivrInitDetails,setIvrInitDetails] = useState({});
+    const [ivrInitDetails, setIvrInitDetails] = useState({});
+    const router = useRouter();
 
     let params = useSearchParams();
 
@@ -41,8 +42,8 @@ export default function Home() {
         handleDecode(token, client_handle)
 
     }, [])
-    
-    const handleLogin = async (phone,sessionId) => {
+
+    const handleLogin = async (phone, sessionId) => {
         let data = JSON.stringify({
             "phoneNumber": phone,
             "isTermsAndConditionAgreed": true
@@ -71,42 +72,42 @@ export default function Home() {
 
     }
 
-    const handleSubmitOTP = 
-      (otp) => {
+    const handleSubmitOTP =
+        (otp) => {
 
-        let data = JSON.stringify({
-            "phoneNumber": phone,
-            "otp": otp,
-            "otpUniqueID": otpId
-          });
-          
-          let config = {
-            method: 'post',
-            maxBodyLength: Infinity,
-            url: `${process.env.NEXT_PUBLIC_AA_ADAPTER_URL}/User/verify-otp`,
-            headers: { 
-              'session_id': sessionId, 
-              'Content-Type': 'application/json'
-            },
-            data : data
-          };
-          
-          axios.request(config)
-          .then((response) => {
-            setIvrInitDetails({...response.data,sessionId,phone,clientHandle})
-            console.log({...response.data,sessionId,phone,clientHandle});
+            let data = JSON.stringify({
+                "phoneNumber": phone,
+                "otp": otp,
+                "otpUniqueID": otpId
+            });
 
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      }
+            let config = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: `${process.env.NEXT_PUBLIC_AA_ADAPTER_URL}/User/verify-otp`,
+                headers: {
+                    'session_id': sessionId,
+                    'Content-Type': 'application/json'
+                },
+                data: data
+            };
 
-    useEffect(()=>{
+            axios.request(config)
+                .then((response) => {
+                    setIvrInitDetails({ ...response.data, sessionId, phone, clientHandle })
+                    console.log({ ...response.data, sessionId, phone, clientHandle });
+
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        }
+
+    useEffect(() => {
         console.log(otpId);
 
-    },[otpId])
-    
+    }, [otpId])
+
 
     const handleDecode = async (token, client) => {
         let url = process.env.NEXT_PUBLIC_AA_ADAPTER_URL;
@@ -131,7 +132,7 @@ export default function Home() {
             let { sessionId, phone, fiuName } = data;
             setSessionId(sessionId);
             setPhone(phone);
-            await handleLogin(phone,sessionId);
+            await handleLogin(phone, sessionId);
 
         }
         else {
@@ -158,18 +159,46 @@ export default function Home() {
         }
     }
 
-    const triggerIVR = async() => {
-        await axios.post(`${process.env.NEXT_PUBLIC_AA_ADAPTER_URL}/progress`,{
-            sessionId: sessionId,
-            progress: 3,
+    const triggerIVR = async () => {
+        try {
+            let res = await axios.post(`${process.env.NEXT_PUBLIC_AA_ADAPTER_URL}/ivr`, {
+                sessionId: sessionId,
+                name: 'Hrusheekesh',
+                mobile: phone,
 
-        })
+            });
+
+            console.log(res);
+
+            if(res.status !== 200){
+                message.warning("Error triggering IVR Call",3);
+                return;
+                
+            }
+
+            await axios.post(`${process.env.NEXT_PUBLIC_AA_ADAPTER_URL}/progress`, {
+                sessionId: sessionId,
+                progress: 3,
+
+            })
+
+        }
+        catch (err) {
+
+        }
 
     }
 
     useEffect(() => {
         if (sessionId.length === 0) {
             return;
+        }
+        if (step === 6) {
+            setTimeout(() => {
+                router.push('/');
+
+            }, 2000);
+
         }
         let interval = setInterval(() => {
             getProgress();
@@ -180,7 +209,7 @@ export default function Home() {
 
         }, 2000)
 
-    }, [sessionId]);
+    }, [sessionId, step]);
 
     return (
         <div className={styles.page}>
@@ -197,10 +226,10 @@ export default function Home() {
             <Button disabled={step !== 2} type="primary" onClick={triggerIVR}>Trigger IVR Call</Button>
 
             {
-                step === 1 && 
+                step === 1 &&
                 <div>
                     <Typography.Title level={5}>Enter your OTP</Typography.Title>
-                    <Input.OTP length={4} onChange={(e)=>handleSubmitOTP(e,otpId)}/>
+                    <Input.OTP length={4} onChange={(e) => handleSubmitOTP(e, otpId)} />
 
                 </div>
             }
