@@ -2,15 +2,33 @@
 
 import { Button, Checkbox, Input, message, Typography } from "antd";
 import styles from "./page.module.css";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function Home() {
+function Home() {
   const [mobile, setMobile] = useState('');
   const [fiList, setFiList] = useState([]);
-  const [fiuEntity, setFiuEntity] = useState('rev-fiu');
   let router = useRouter();
+  let params = useSearchParams();
+
+  useEffect(()=>{
+    let Consent = params.get('Consent');
+    if(Consent){
+      let accepted = Consent === "Accepted";
+      if(accepted){
+        message.success('Consent has been accepted',3);
+        router.push('/');
+
+      }
+      else{
+        message.error('Consent has been rejected',3);
+        router.push('/');
+
+      }
+
+    }
+  },[])
 
   let fiTypeList = [
     "DEPOSIT",
@@ -71,12 +89,6 @@ export default function Home() {
 
     }
 
-    if (fiuEntity.length === 0) {
-      message.warning("Enter FIU Entity");
-      return;
-
-    }
-
     let data = JSON.stringify({
       "redirect_params": {
         "callback_url": "https://bootstack.xyz"
@@ -91,10 +103,10 @@ export default function Home() {
       maxBodyLength: Infinity,
       url: `${process.env.NEXT_PUBLIC_AA_ADAPTER_URL}/auth`,
       headers: {
-        'fiu_entity_id': fiuEntity,
+        'fiu_entity_id': 'rev-fiu',
         'aa_entity_id': 'saafe-sandbox',
         'Content-Type': 'application/json',
-        'Authorization': 'Basic YWlfMjhYUGs5Q0x4QVNtZTJWc2s2cHluNlJ0dHBkeE4yRGU6YXNfaGZkMlJKc0R1ejNRaU1xeWlMODVKZ0xVeDhQSzZIRGY='
+
       },
       data
     };
@@ -142,4 +154,12 @@ export default function Home() {
 
     </div>
   );
+}
+
+export default function Page(){
+  return(
+    <Suspense>
+      <Home />
+    </Suspense>
+  )
 }

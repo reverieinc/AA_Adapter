@@ -13,6 +13,8 @@ const createSession = async(req,res,data,baseUrl) => {
     let ivrSessionStart = Date.now();
     let ivrSessionEnd = ivrSessionStart+ 30*60*1000;
 
+    console.log(consentHandle);
+
     if(!sessionId || !consentHandle || !phone || !fiuId || !fiuName || !userid || !baseUrl){
         return null;
 

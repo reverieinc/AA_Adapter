@@ -2,13 +2,13 @@
 
 import { Button, Input, message, Typography } from "antd";
 import styles from "../page.module.css";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import axios from "axios";
 const { TextArea } = Input;
 import { CheckCircleTwoTone, LoadingOutlined } from '@ant-design/icons';
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 
-export default function Home() {
+function Home() {
     const [value, setValue] = useState('');
     const [clientHandle, setClientHandle] = useState('');
     const [buttonDisabled, setButtonDisabled] = useState(false);
@@ -200,7 +200,14 @@ export default function Home() {
         }
         if (step === 6) {
             setTimeout(() => {
-                router.push('/');
+                router.push('/?Consent=Accepted');
+
+            }, 2000);
+
+        }
+        if (step === 7) {
+            setTimeout(() => {
+                router.push('/?Consent=Rejected');
 
             }, 2000);
 
@@ -271,4 +278,13 @@ export default function Home() {
             }
         </div>
     );
+}
+
+export default function Page(){
+    return(
+        <Suspense>
+            <Home />
+            
+        </Suspense>
+    )
 }
