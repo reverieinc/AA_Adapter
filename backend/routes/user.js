@@ -212,7 +212,13 @@ router.post('/Consents/Approval/Verification', async function (req, res) {
                         if(!result){
                             return;
                         }
-                        session.step = 6;
+                        if(result[0]?.ConsentStatus === "FAILED"){
+                            session.step = 7;
+                        }
+                        else{
+                            session.step = 6;
+                        }
+
                         await sessionCollection.updateOne({ sessionId }, { $set: session });
                         res.status(200).json(result);
                     })
