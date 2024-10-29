@@ -17,6 +17,7 @@ export default function Home() {
     const [step, setStep] = useState(0);
     const [otpId, setOtpId] = useState('');
     const [ivrInitDetails, setIvrInitDetails] = useState({});
+    const [ivrLoading,setIvrLoading] = useState(false);
     const router = useRouter();
 
     let params = useSearchParams();
@@ -161,6 +162,7 @@ export default function Home() {
 
     const triggerIVR = async () => {
         try {
+            setIvrLoading(true);
             let res = await axios.post(`${process.env.NEXT_PUBLIC_AA_ADAPTER_URL}/ivr`, {
                 sessionId: sessionId,
                 name: 'Hrusheekesh',
@@ -173,7 +175,7 @@ export default function Home() {
             if(res.status !== 200){
                 message.warning("Error triggering IVR Call",3);
                 return;
-                
+
             }
 
             await axios.post(`${process.env.NEXT_PUBLIC_AA_ADAPTER_URL}/progress`, {
@@ -185,6 +187,9 @@ export default function Home() {
         }
         catch (err) {
 
+        }
+        finally{
+            setIvrLoading(false);
         }
 
     }
@@ -213,17 +218,18 @@ export default function Home() {
 
     return (
         <div className={styles.page}>
+            <Typography.Title level={2}>AA Adapter - Sahamati BuildAAthon 2024</Typography.Title>
             {
                 sessionId.length > 0 &&
                 <div>
-                    <h2>Session ID : {sessionId}</h2>
-                    <p>Phone: {phone}</p>
+                    <Typography.Title level={2}>Phone: {phone}</Typography.Title>
+                    <Typography.Title level={3}>Session ID : {sessionId}</Typography.Title>
 
                 </div>
             }
 
 
-            <Button disabled={step !== 2} type="primary" onClick={triggerIVR}>Trigger IVR Call</Button>
+            <Button loading={ivrLoading} disabled={step !== 2} type="primary" onClick={triggerIVR}>Trigger IVR Call</Button>
 
             {
                 step === 1 &&

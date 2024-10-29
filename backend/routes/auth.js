@@ -68,15 +68,17 @@ router.post('/', async (req, res) => {
         let config = {
             method: 'post',
             maxBodyLength: Infinity,
-            url: 'http://localhost:9000/v2/consents/request',
+            url: `${process.env.DOCKER_URL}v2/consents/request`,
             headers: {
                 'fiu_entity_id': fiuEntityId,
                 'aa_entity_id': aaEntityId,
                 'Content-Type': 'application/json',
-                'Authorization': 'Basic YWlfSFR2RGJvTFJEVlEyRmJnck1WbTRDQWVUZ2pheDV2dE46YXNfa242NW53TWlqODhOY2Zydm9vWkhkVmo2UW9icXR0Qnc='
+                'Authorization': process.env.BASIC_AUTH || 'Basic Auth'
             },
             data: data
         };
+
+        console.log(config);
 
         axios.request(config)
             .then((response) => {

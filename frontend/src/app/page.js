@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const [mobile, setMobile] = useState('');
   const [fiList, setFiList] = useState([]);
-  const [fiuEntity,setFiuEntity] = useState('');
+  const [fiuEntity, setFiuEntity] = useState('rev-fiu');
   let router = useRouter();
 
   let fiTypeList = [
@@ -71,7 +71,7 @@ export default function Home() {
 
     }
 
-    if(fiuEntity.length === 0){
+    if (fiuEntity.length === 0) {
       message.warning("Enter FIU Entity");
       return;
 
@@ -106,7 +106,7 @@ export default function Home() {
         let token = redirectUrl.split('?')[1];
         let proxyRedirect = `/webview?client_handle=saafe_aa&${token}`;
         router.push(proxyRedirect);
-        
+
       })
       .catch((error) => {
         console.log(error.message);
@@ -116,28 +116,30 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
+      <Typography.Title level={2}>FIU Consent Request Generator</Typography.Title>
       <Input value={mobile} onChange={(e) => setMobile(e.target.value)} placeholder="Enter Registered Mobile Number" />
-      <Input value={fiuEntity} onChange={(e)=>setFiuEntity(e.target.value)} placeholder="Enter FIU Entity ID" />
-      <Typography.Title style={{ color: "white" }} color="white">Consents</Typography.Title>
-      <div className={styles.gridContainer}>
-        {
-          fiTypeList.map((fiType, index) => (
-            <Checkbox
-              style={{ color: "white" }}
-              key={index}
-              value={fiType}
-              onChange={(e) => {
-                handleAddToFIList(e, fiType)
-              }}
-            >
-              {fiType}
+      <div style={{display:"flex",flexDirection:"column",justifyContent:"flex-start",alignItems:"flex-start",gap:"14px"}}>
+        <Typography.Title level={3}>User Consent Progress</Typography.Title>
+        <div className={styles.gridContainer}>
+          {
+            fiTypeList.map((fiType, index) => (
+              <Checkbox
+                key={index}
+                value={fiType}
+                onChange={(e) => {
+                  handleAddToFIList(e, fiType)
+                }}
+              >
+                {fiType}
 
-            </Checkbox>
+              </Checkbox>
 
-          ))
-        }
+            ))
+          }
+        </div>
+        <Button type="primary" onClick={handleGetConsent}>Send Consent</Button>
       </div>
-      <Button type="primary" onClick={handleGetConsent}>Send Consent</Button>
+
     </div>
   );
 }

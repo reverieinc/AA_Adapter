@@ -9,6 +9,7 @@ router.post('/', async (req, res) => {
         let name = body.name;
         let mobile = body.mobile;
         let sessionId = body.sessionId;
+        console.log(name, mobile, sessionId);
         let data = JSON.stringify([
             {
                 "recipient_phone_number": "+918104035237",
@@ -22,7 +23,7 @@ router.post('/', async (req, res) => {
         let config = {
             method: 'post',
             maxBodyLength: Infinity,
-            url: 'http://172.18.0.04:8765/bulk_call',
+            url: process.env.IVR_URL || 'https://ivr-api-dev.reverieinc.com/bulk_call',
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -31,7 +32,7 @@ router.post('/', async (req, res) => {
 
         axios.request(config)
             .then((response) => {
-                console.log(response.ok);
+                console.log(response);
                 res.status(200).json({ message: 'IVR triggered successfully' });
                 return;
 
