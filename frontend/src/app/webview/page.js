@@ -23,9 +23,9 @@ function Home() {
     let params = useSearchParams();
 
     const progressSteps = [
+        'Trigger IVR Call',
         'User Login',
         'OTP Verification',
-        'Trigger IVR Call',
         'Consent Review',
         'Fetching Linked Accounts',
         'Consent Approval',
@@ -133,7 +133,8 @@ function Home() {
             let { sessionId, phone, fiuName } = data;
             setSessionId(sessionId);
             setPhone(phone);
-            await handleLogin(phone, sessionId);
+            // await triggerIVR();
+            // await handleLogin(phone, sessionId);
 
         }
         else {
@@ -180,7 +181,7 @@ function Home() {
 
             await axios.post(`${process.env.NEXT_PUBLIC_AA_ADAPTER_URL}/progress`, {
                 sessionId: sessionId,
-                progress: 3,
+                progress: 1,
 
             })
 
@@ -236,15 +237,15 @@ function Home() {
             }
 
 
-            <Button loading={ivrLoading} disabled={step !== 2} type="primary" onClick={triggerIVR}>Trigger IVR Call</Button>
+            <Button loading={ivrLoading} disabled={step !== 0} type="primary" onClick={triggerIVR}>Trigger IVR Call</Button>
 
             {
-                step === 1 &&
-                <div>
-                    <Typography.Title level={5}>Enter your OTP</Typography.Title>
-                    <Input.OTP length={4} onChange={(e) => handleSubmitOTP(e, otpId)} />
+                // step === 1 &&
+                // <div>
+                //     <Typography.Title level={5}>Enter your OTP</Typography.Title>
+                //     <Input.OTP length={4} onChange={(e) => handleSubmitOTP(e, otpId)} />
 
-                </div>
+                // </div>
             }
 
             {

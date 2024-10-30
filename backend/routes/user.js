@@ -16,6 +16,115 @@ router.get("/", function (req, res) {
   res.json({ message: "Welcome to the User API!" });
 });
 
+async function linkedaccount(session, fipId, fiArr) {
+    let accountsArr = []
+    for(let account of fiArr){
+        account.maskedAccNumber = "XXXXXXXXXXXXXXXX"+account.last4digits;
+        accountsArr.push(account);
+
+    }
+  let returnData;
+  let data = JSON.stringify({
+    FipId: fipId,
+    Accounts: accountsArr,
+    signature: session.signature,
+  });
+
+  console.log(data);
+
+  let config = {
+    method: "post",
+    maxBodyLength: Infinity,
+    url: "https://test.saafe.in/api/v2/User/account/link",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + session.accessToken,
+      Cookie: "OAuth_Token_Request_State=fa03ed19-50f3-416c-bceb-c22e51b5cc0b",
+    },
+    data: data,
+  };
+
+  await axios
+    .request(config)
+    .then((response) => {
+      console.log(response.data);
+      returnData = response.data;
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
+
+  return returnData; 
+}
+
+async function verifyOTP(RefNumber, fipId, session) {
+  let returnResp;
+
+  let data = JSON.stringify({
+    RefNumber,
+    token: "OTP received from the FIP",
+    fipId,
+  });
+
+  let config = {
+    method: "post",
+    maxBodyLength: Infinity,
+    url: "https://test.saafe.in/api/v2/User/account/link/verify",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + session.accessToken,
+      Cookie: "OAuth_Token_Request_State=fa03ed19-50f3-416c-bceb-c22e51b5cc0b",
+    },
+    data: data,
+  };
+
+  await axios
+    .request(config)
+    .then((response) => {
+      console.log(JSON.stringify(response.data));
+      returnResp = response.data;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+
+  return returnResp;
+}
+
+router.post("/account/verify", async (req, res) => {
+  let body = req.body;
+  let { accounts } = body;
+  if (!accounts) {
+    res.status(400).json({
+      message: "No accounts given",
+    });
+    return;
+  }
+  let sessionId = req.headers?.session_id;
+  let session = await sessionCollection.findOne({ sessionId });
+  let fipId = req.headers?.fip_handle;
+
+  let response = await linkedaccount(session, fipId, accounts);
+  console.log(response);
+  if(!response){
+    res.status(400).json({message:"Unserviceable right now"});
+  }
+  let { refNumber } = response;
+  if (!refNumber) {
+    res.status(400).json({
+      message: "Not Linked",
+    });
+    return;
+  }
+  let verifyResponse = await verifyOTP(refNumber, fipId, session);
+  console.log(verifyResponse);
+
+  res.status(200).json({ message: "success" });
+  return;
+});
+
 router.get("/accounts", async function (req, res) {
   res.status(200).json([
     {
@@ -33,13 +142,10 @@ router.get("/accounts", async function (req, res) {
   ]);
 });
 
-async function discoverAccounts(token,fiTypes,fipHandle,mobile) {
+async function discoverAccounts(token, fiTypes, fipHandle, mobile) {
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
-  myHeaders.append(
-    "Authorization",
-    token
-  );
+  myHeaders.append("Authorization", token);
   myHeaders.append(
     "Cookie",
     "OAuth_Token_Request_State=fa03ed19-50f3-416c-bceb-c22e51b5cc0b"
@@ -65,17 +171,19 @@ async function discoverAccounts(token,fiTypes,fipHandle,mobile) {
 
   let responseObj;
 
-  await fetch("https://test.saafe.in/api/v2/User/account/discovery", requestOptions)
+  await fetch(
+    "https://test.saafe.in/api/v2/User/account/discovery",
+    requestOptions
+  )
     .then((response) => {
-        return response.json()
+      return response.json();
     })
-    .then(res=>{
-        responseObj = res;
+    .then((res) => {
+      responseObj = res;
     })
     .catch((error) => console.error(error));
 
-    return responseObj;
-
+  return responseObj;
 }
 
 router.get("/linkedaccount", async function (req, res) {
@@ -116,12 +224,10 @@ router.get("/linkedaccount", async function (req, res) {
         )
           .then((response) => {
             if (!response.ok) {
-              res
-                .status(response.status)
-                .json({
-                  status: "ERROR",
-                  message: "Failed to fetch linked accounts",
-                });
+              res.status(response.status).json({
+                status: "ERROR",
+                message: "Failed to fetch linked accounts",
+              });
               return;
             }
             return response.json();
@@ -138,28 +244,35 @@ router.get("/linkedaccount", async function (req, res) {
                 linkRefNumber,
                 maskedAccNumber,
               } = account;
-              if(fiTypes.includes(fiType) && fipHandle === fipHandleId)
-              accounts.push({
-                accountType: fiType,
-                linkRefNumber,
-                last4digits: maskedAccNumber.slice(maskedAccNumber.length - 4),
-                alreadyRegistered: true
-              });
+              if (fiTypes.includes(fiType) && fipHandle === fipHandleId)
+                accounts.push({
+                  accountType: fiType,
+                  linkRefNumber,
+                  last4digits: maskedAccNumber.slice(
+                    maskedAccNumber.length - 4
+                  ),
+                  alreadyRegistered: true,
+                });
             });
-            let resp =  await discoverAccounts(token,fiTypes,fipHandleId,session.phone);
+            let resp = await discoverAccounts(
+              token,
+              fiTypes,
+              fipHandleId,
+              session.phone
+            );
             let accountArr = resp.DiscoveredAccounts;
-            accountArr.forEach(acc=>{
-                let {FIType, accRefNumber, maskedAccNumber} = acc;
-                if(fiTypes.includes(FIType)){
-                    accounts.push({
-                        accountType: FIType,
-                        linkRefNumber:accRefNumber,
-                        last4digits: maskedAccNumber.slice(maskedAccNumber.length - 4),
-                        alreadyRegistered:false
-                      });
-                }
-                
-
+            accountArr.forEach((acc) => {
+              let { FIType, accRefNumber, maskedAccNumber } = acc;
+              if (fiTypes.includes(FIType)) {
+                accounts.push({
+                  accountType: FIType,
+                  linkRefNumber: accRefNumber,
+                  last4digits: maskedAccNumber.slice(
+                    maskedAccNumber.length - 4
+                  ),
+                  alreadyRegistered: false,
+                });
+              }
             });
 
             session.signature = resp.signature;
@@ -234,14 +347,14 @@ router.get("/Consent/handle", async function (req, res) {
             if (!result) {
               return;
             }
-            if (!result["fiTypes"]) {
-              res.status(400).json({
-                status: "ERROR",
-                message: "Failed to fetch fiTypes from Consent",
-              });
-              return;
-            }
-            session.fiTypes = result["fiTypes"];
+            // if (!result["fiTypes"]) {
+            //   res.status(400).json({
+            //     status: "ERROR",
+            //     message: "Failed to fetch fiTypes from Consent",
+            //   });
+            //   return;
+            // }
+            // session.fiTypes = result["fiTypes"];
             session.step = 4;
             await sessionCollection.updateOne({ sessionId }, { $set: session });
 
@@ -320,15 +433,11 @@ router.post("/Consents/Approval/Verification", async function (req, res) {
           requestOptions
         )
           .then((response) => {
-            if (!response.ok) {
-              res
-                .status(response.status)
-                .json({ status: "ERROR", message: "Failed to Approve" });
-              return;
-            }
+            console.log(response)
             return response.json();
           })
           .then(async (result) => {
+            console.log(result);
             if (!result) {
               return;
             }
@@ -407,7 +516,7 @@ router.post("/init-otp", async (req, res) => {
         })
         .then(async (result) => {
           //step to 1
-          session.step = 1;
+          session.step = 2;
           await sessionCollection.updateOne({ sessionId }, { $set: session });
           res.status(200).json({
             status: "OK",
@@ -495,7 +604,7 @@ router.post("/verify-otp", async (req, res) => {
           let { firstName, lastName, vuaId, phoneNumber, access_token } =
             result;
           session = await updateSessionAccessToken(sessionId, access_token);
-          session.step = 2;
+          session.step = 3;
           await sessionCollection.updateOne({ sessionId }, { $set: session });
           res.status(200).json({
             firstName,
