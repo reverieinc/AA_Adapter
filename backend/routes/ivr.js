@@ -12,7 +12,7 @@ router.post('/', async (req, res) => {
         console.log(name, mobile, sessionId);
         let data = JSON.stringify([
             {
-                "recipient_phone_number": "+918104035237",
+                "recipient_phone_number": `+91${mobile.slice(-10)}`,
                 "conversation_id": "243820",
                 name,
                 "session_id": sessionId,

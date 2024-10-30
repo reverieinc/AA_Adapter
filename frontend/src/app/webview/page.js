@@ -26,8 +26,8 @@ function Home() {
         'User Login',
         'OTP Verification',
         'Trigger IVR Call',
-        'Fetching Linked Accounts',
         'Consent Review',
+        'Fetching Linked Accounts',
         'Consent Approval',
 
     ];
