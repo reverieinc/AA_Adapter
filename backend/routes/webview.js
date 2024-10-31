@@ -82,7 +82,6 @@ router.post('/',async(req,res)=>{
             const myHeaders = new Headers();
             myHeaders.append("trackingid", "");
             myHeaders.append("Content-Type", "application/json");
-            myHeaders.append("Cookie", "null; KC_REDIRECT=/api/v2/User/linkedaccount");
             
             const requestOptions = {
               method: "POST",

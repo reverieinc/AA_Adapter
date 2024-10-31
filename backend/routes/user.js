@@ -40,7 +40,6 @@ async function linkedaccount(session, fipId, fiArr) {
       Accept: "application/json",
       "Content-Type": "application/json",
       Authorization: "Bearer " + session.accessToken,
-      Cookie: "OAuth_Token_Request_State=fa03ed19-50f3-416c-bceb-c22e51b5cc0b",
     },
     data: data,
   };
@@ -75,7 +74,6 @@ async function verifyOTP(RefNumber, fipId, session) {
       Accept: "application/json",
       "Content-Type": "application/json",
       Authorization: "Bearer " + session.accessToken,
-      Cookie: "OAuth_Token_Request_State=fa03ed19-50f3-416c-bceb-c22e51b5cc0b",
     },
     data: data,
   };
@@ -146,10 +144,6 @@ async function discoverAccounts(token, fiTypes, fipHandle, mobile) {
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
   myHeaders.append("Authorization", token);
-  myHeaders.append(
-    "Cookie",
-    "OAuth_Token_Request_State=fa03ed19-50f3-416c-bceb-c22e51b5cc0b"
-  );
   const raw = JSON.stringify({
     FipId: fipHandle,
     Identifiers: [
@@ -319,10 +313,6 @@ router.get("/Consent/handle", async function (req, res) {
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
         myHeaders.append("Authorization", token);
-        myHeaders.append(
-          "Cookie",
-          "null; KC_REDIRECT=/api/v2/User/linkedaccount"
-        );
 
         const requestOptions = {
           method: "GET",
@@ -334,16 +324,10 @@ router.get("/Consent/handle", async function (req, res) {
           requestOptions
         )
           .then((response) => {
-            if (!response.ok) {
-              res.status(response.status).json({
-                status: "ERROR",
-                message: "Failed to fetch linked accounts",
-              });
-              return;
-            }
             return response.json();
           })
           .then(async (result) => {
+            console.log(result)
             if (!result) {
               return;
             }
@@ -410,10 +394,6 @@ router.post("/Consents/Approval/Verification", async function (req, res) {
         myHeaders.append("Content-Type", "application/json");
         myHeaders.append("Accept", "application/json");
         myHeaders.append("Authorization", token);
-        myHeaders.append(
-          "Cookie",
-          "null; KC_REDIRECT=/api/v2/User/linkedaccount"
-        );
 
         const raw = JSON.stringify({
           consentHandle: [consentHandle],
@@ -486,10 +466,6 @@ router.post("/init-otp", async (req, res) => {
     if (session) {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
-      myHeaders.append(
-        "Cookie",
-        "null; null; null; KC_REDIRECT=/api/v2/User/linkedaccount"
-      );
 
       const raw = JSON.stringify({
         phoneNumber,
@@ -565,10 +541,6 @@ router.post("/verify-otp", async (req, res) => {
     if (session) {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
-      myHeaders.append(
-        "Cookie",
-        "null; null; null; KC_REDIRECT=/api/v2/User/linkedaccount"
-      );
 
       const raw = JSON.stringify({
         code: otp,
