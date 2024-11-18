@@ -7,6 +7,7 @@ import axios from "axios";
 const { TextArea } = Input;
 import { CheckCircleTwoTone, LoadingOutlined } from '@ant-design/icons';
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 function Home() {
     const [value, setValue] = useState('');
@@ -226,7 +227,12 @@ function Home() {
 
     return (
         <div className={styles.page}>
+    <div style={{display:"flex",flexDirection:"row",justifyContent:"flex-start",alignItems:"center",
+      gap:"14px"
+    }}>
+      <Image width={200} height={132} src="/logo.png" alt="logo" />
             <Typography.Title level={2}>AA Adapter - Sahamati BuildAAthon 2024</Typography.Title>
+            </div>
             {
                 sessionId.length > 0 &&
                 <div>
