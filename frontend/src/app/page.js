@@ -5,6 +5,7 @@ import styles from "./page.module.css";
 import { Suspense, useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from 'next/image'
 
 function Home() {
   const [mobile, setMobile] = useState('');
@@ -128,7 +129,12 @@ function Home() {
 
   return (
     <div className={styles.page}>
+    <div style={{display:"flex",flexDirection:"row",justifyContent:"flex-start",alignItems:"center",
+      gap:"14px"
+    }}>
+      <Image width={200} height={132} src="/logo.png" alt="logo" />
       <Typography.Title level={2}>FIU Consent Request Generator</Typography.Title>
+    </div>
       <Input value={mobile} onChange={(e) => setMobile(e.target.value)} placeholder="Enter Registered Mobile Number" />
       <div style={{display:"flex",flexDirection:"column",justifyContent:"flex-start",alignItems:"flex-start",gap:"14px"}}>
         <Typography.Title level={3}>User Consent Progress</Typography.Title>
